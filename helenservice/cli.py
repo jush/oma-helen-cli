@@ -106,19 +106,28 @@ class HelenCLIPrompt(Cmd):
                 print("Please provide proper start and end dates in format 'YYYY-mm-dd'")
 
     def do_get_monthly_measurements_json(self, input=None):
-        """Get the monthly electricity measurements of the on-going year as JSON"""
+        """Get the monthly electricity measurements of the on-going year as JSON
+        You can provide a delivery site ID. See get_contract_data_json to get delivery_site id of each contract.
+        """
 
         year = date.today().year
-        monthly_measurements = self.api_client.get_monthly_measurements_by_year(year)
+        delivery_site_id = None
+        if input and not input.isspace():
+            delivery_site_id = int(input)
+        monthly_measurements = self.api_client.get_monthly_measurements_by_year(year, delivery_site_id)
         monthly_measurements_json = json.dumps(monthly_measurements, default=lambda o: o.__dict__, indent=2)
         print(monthly_measurements_json)
 
     def do_get_daily_measurements_json(self, input=None):
-        """Get the daily electricity measurements of the on-going month of the on-going year as JSON"""
+        """Get the daily electricity measurements of the on-going month of the on-going year as JSON.
+        You can provide a delivery site ID. See get_contract_data_json to get delivery_site id of each contract.
+        """
 
         previous_month_last_day_date, wanted_month_last_day_date = get_month_date_range_by_date(date.today())
-
-        daily_measurements = self.api_client.get_daily_measurements_between_dates(previous_month_last_day_date, wanted_month_last_day_date)
+        delivery_site_id = None
+        if input and not input.isspace():
+            delivery_site_id = int(input)
+        daily_measurements = self.api_client.get_daily_measurements_between_dates(previous_month_last_day_date, wanted_month_last_day_date, delivery_site_id)
         daily_measurements_json = json.dumps(daily_measurements, default=lambda o: o.__dict__, indent=2)
         print(daily_measurements_json)
 
@@ -146,13 +155,18 @@ class HelenCLIPrompt(Cmd):
     def do_get_contract_delivery_site_id(self, input=None):
         """Helper to get the delivery site id from your contract data. To see the whole contract data as JSON, use get_contract_data_json"""
         
-        site_id = self.api_client.get_delivery_site_id()
+        site_id = self.api_client.get_latest_active_delivery_site_id()
         print(site_id)
 
     def do_get_contract_base_price(self, input=None):
-        """Helper to get the contract base price from your contract data. To see the whole contract data as JSON, use get_contract_data_json"""
+        """Helper to get the contract base price from your contract data. To see the whole contract data as JSON, use get_contract_data_json.
+        You can provide a delivery site ID. See get_contract_data_json to get delivery_site id of each contract.
+        """
         
-        base_price = self.api_client.get_contract_base_price()
+        delivery_site_id = None
+        if input and not input.isspace():
+            delivery_site_id = int(input)
+        base_price = self.api_client.get_contract_base_price(delivery_site_id)
         print(base_price)
 
     def do_get_contract_transfer_fee(self, input=None):
